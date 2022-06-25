@@ -33,20 +33,21 @@ public class gameController : MonoBehaviour
 
     public void hurtHelth()
     {
-        hurt--;
-        if(hurt<=0)
-        {
-            playerSuccess();
-        }
-        else
-        {
-            if(hurt==0 && love==0 && groundExtend == 0)
-            {
-                //直接调用onClick()
-                buttonStart();
-            }
-        }
-        goBack();
+        playerSuccess();
+        //hurt--;
+        //if(hurt<=0)
+        //{
+        //    playerSuccess();
+        //}
+        //else
+        //{
+        //    if(hurt==0 && love==0 && groundExtend == 0)
+        //    {
+        //        //直接调用onClick()
+        //        buttonStart();
+        //    }
+        //}
+        //goBack();
     }
 
     void goBack()//一次掉血后返回初始位置
@@ -74,14 +75,18 @@ public class gameController : MonoBehaviour
             PlayerPrefs.SetInt("currentLevel", currentLevel);
         }
         //Time.timeScale = 0;
-        Debug.Log(FindObjectOfType<AIController>());
-        FindObjectOfType<AIController>().canWalk = false;
+        var ai = FindObjectOfType<AIController>();
+        ai.canWalk = false;
+        ai.GetComponent<Dissolve>().StartDissolve();
     }
 
     public void playerFail()
     {
         Debug.Log("fail");
-        //Time.timeScale失效原因还未找到
-        Time.timeScale = 0;//失败，要弹出失败面板
+        var ai = FindObjectOfType<AIController>();
+        ai.canWalk = false;
     }
+
+
+
 }

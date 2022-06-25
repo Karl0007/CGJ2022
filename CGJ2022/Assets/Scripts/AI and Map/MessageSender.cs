@@ -24,15 +24,15 @@ public class MessageSender : MonoBehaviour
         haz[1] = new Vector2Int(4, 6);
         haz[2] = new Vector2Int(3, 6);
         haz[3] = new Vector2Int(4, 8);
-        res = GetComponent<PathManagement>().Pathfinder(map, haz);
-        res = GetComponent<PathManagement>().Pathfinder(map, haz);
+        //res = GetComponent<PathManagement>().Pathfinder(map, haz);
+        //res = GetComponent<PathManagement>().Pathfinder(map, haz);
 
-        for(int i=0;i<res.Length;i++)
-        {
-            Debug.Log(res[i].x);
-            Debug.Log(res[i].y);
-            Debug.Log("/////");
-        }
+        //for(int i=0;i<res.Length;i++)
+        //{
+        //    Debug.Log(res[i].x);
+        //    Debug.Log(res[i].y);
+        //    Debug.Log("/////");
+        //}
 
         //GetComponent<AIController>().updatePath(res);
     }

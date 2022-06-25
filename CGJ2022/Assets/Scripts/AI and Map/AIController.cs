@@ -67,19 +67,16 @@ public class AIController : MonoBehaviour
 
                 nextDirection = (targetPath[0] - currentPath[0]) == 0? -(targetPath[1] - currentPath[1]) : (targetPath[0] - currentPath[0]);
                 //开启转身
-                //Debug.Log(nextDirection);
                 rotateAngle = ((currentDirection * nextDirection) / Mathf.Abs(currentDirection * nextDirection)) * 90;
                 Debug.Log("rotate" + rotateAngle);
                 transform.Rotate(0f, rotateAngle, 0f, Space.Self);
-                //StartCoroutine(RotateTheHero());
                 Invoke("ChangingBool", 0.5f);
 
             }
 
 
             //rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1])*moveSpeed*unit;
-            Debug.Log(new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1]).normalized);
-            rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1]).normalized *moveSpeed*20;
+            rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1]).normalized *moveSpeed*10;
 
 
         }
@@ -101,32 +98,17 @@ public class AIController : MonoBehaviour
 	{
         if (other.gameObject.CompareTag("Hurt"))
         {
-            Debug.Log("1234");
-            transform_ui.GetComponent<gameController>().hurtHelth();
+            var t = other.GetComponent<BlockManager>().type;
+            GameManager.Instance.Hurt(t);
+            FindObjectOfType<gameController>().hurtHelth();
         }
         if (other.gameObject.CompareTag("Win"))
         {
-            transform_ui.GetComponent<gameController>().playerFail();
+            GameManager.Instance.StartReload(1);
+            FindObjectOfType<gameController>().playerFail();
         }
     }
 
-	//碰到了伤害
-	private void OnCollisionEnter(Collision collision)
-    {
-        if(collision.gameObject.CompareTag("Hurt"))
-        {
-            transform_ui.GetComponent<gameController>().hurtHelth();
-
-            //返回伤害坐标：
-            //collision.gameObject.transform.position.x;
-            //collision.gameObject.transform.position.z;
-        }
-        if(collision.gameObject.CompareTag("Win"))
-        {
-            transform_ui.GetComponent<gameController>().playerFail();
-        }
-        
-    }
 
     IEnumerator RotateTheHero()
     {
@@ -173,4 +155,5 @@ public class AIController : MonoBehaviour
     {
         canWalk = true;
     }
+
 }

@@ -16,6 +16,7 @@ public class BlockManager : MonoBehaviour
 	public static int[,] intMap;
 	public static Vector2Int stPos;
 	public static Vector2Int edPos;
+	public static float posY;
 
 	public enum BlockType
 	{
@@ -74,19 +75,21 @@ public class BlockManager : MonoBehaviour
 		return ((pos + LeftDown + Vector2.one * 0.5f) * SumSize);
 	}
 
+	public static Vector3 GetWorldVec3(Vector2 pos)
+	{
+		return new Vector3(pos.x, posY, pos.y);
+	}
+
 	public void Awake()
 	{
-		//cube.SetActive(false);
+		cube.SetActive(false);
 		pos = new Vector2Int(Mathf.RoundToInt((transform.position.x - SumSize / 2) / SumSize), Mathf.RoundToInt((transform.position.z - SumSize / 2) / SumSize));
 		map[pos] = gameObject;
 		LeftDown.x = Mathf.Min(pos.x, LeftDown.x);
 		LeftDown.y = Mathf.Min(pos.y, LeftDown.y);
 		RightUp.x = Mathf.Max(pos.x, RightUp.x);
 		RightUp.y = Mathf.Max(pos.y, RightUp.y);
-		Debug.Log(LeftDown);
-		Debug.Log(RightUp);
-		if (isStart) stPos = pos - LeftDown;
-		if (isEnd) edPos = pos - LeftDown;
+		posY = transform.position.y;
 	}
 
 	public void Start()
@@ -95,8 +98,10 @@ public class BlockManager : MonoBehaviour
 		{
 			intMap = new int[RightUp.x - LeftDown.x + 1 , RightUp.y - LeftDown.y + 1];
 		}
+		if (isStart) stPos = pos - LeftDown;
+		if (isEnd) edPos = pos - LeftDown;
 		intMap[pos.x - LeftDown.x, pos.y - LeftDown.y] = (int)type;
+		Debug.Log(edPos);
 		//ChangeType(BlockType.Type2);
-		FindObjectOfType<PathManagement>().conveyLevel(stPos,edPos,PathManagement.Dir.Left);
 	}
 }

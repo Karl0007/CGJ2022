@@ -18,6 +18,7 @@ public class SelectObjManager : MonoBehaviour
 	private bool isChooseSuccess = false;
 	public bool canPlace= false;
 	public GameObject CurrentObj;
+	public GameObject AIPrefab;
 	
 	public int dangerTime;
 	public int outerTime;
@@ -51,18 +52,30 @@ public class SelectObjManager : MonoBehaviour
 		}
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			FindObjectOfType<PathManagement>().blacklist[0] = 1;
-			FindObjectOfType<PathManagement>().listp = 1;
-			var path = FindObjectOfType<PathManagement>().Pathfinder(BlockManager.intMap, new Vector2Int[1]);
-			Debug.Log(path);
-			foreach (var item in path)
-			{
-				Debug.Log(item);
-			}
-			FindObjectOfType<AIController>().updatePath(path);
-			FindObjectOfType<AIController>().setMove();
-
+			RunAI();
 		}
+	}
+
+	public void RunAI()
+	{
+		Instantiate(AIPrefab, BlockManager.GetWorldVec3(BlockManager.stPos), Quaternion.identity);
+		var pm = FindObjectOfType<PathManagement>();
+		pm.conveyLevel(BlockManager.stPos,BlockManager.edPos, PathManagement.Dir.Left);
+		for (int i = 0; i < GameManager.Instance.DangerList.Length; i++)
+		{
+			if (GameManager.Instance.DangerList[i] == true)
+			{
+				pm.blacklist[pm.listp++] = i;
+			}
+		}
+		var path = FindObjectOfType<PathManagement>().Pathfinder(BlockManager.intMap, new Vector2Int[1]);
+		FindObjectOfType<AIController>().updatePath(path);
+		FindObjectOfType<AIController>().setMove();
+		for (int i = 0; i < path.Length; i++)
+		{
+			Debug.Log(path[i]);
+		}
+
 	}
 
 	void TryGetObj()
@@ -80,7 +93,6 @@ public class SelectObjManager : MonoBehaviour
 		}
 		else
 		{
-			//Debug.Log("fail");
 			isChooseSuccess = false;
 		}
 	}

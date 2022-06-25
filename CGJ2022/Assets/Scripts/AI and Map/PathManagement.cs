@@ -31,6 +31,10 @@ public class PathManagement : MonoBehaviour
 
     void depthFirst(Vector2Int current, int len, int dir)
     {
+        if (len > minlen)
+		{
+            return;
+		}
         if (current == target)
         {
             if (len < minlen) //仅当寻到新的最短路时
