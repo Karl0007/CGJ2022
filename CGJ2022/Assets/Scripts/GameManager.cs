@@ -28,15 +28,22 @@ public class GameManager : MonoBehaviour
 		new LevelData("Level 1-2",2,0,1),
 		new LevelData("Level 1-3",2,2,0),
 		new LevelData("Level 1-4",3,0,2),
-		new LevelData("Level 1-5",1,2,1),
+		new LevelData("Level 1-5",3,2,1),
 	};
 
 	public int CurLevel = 0;
-	public bool[] DangerList = new bool[6];
+	public bool[] DangerList = new bool[5];
 	
 	public int Health;
 	public int Danger;
 	public int Change;
+
+	public iconPreference m_iconPreference;
+	public healthUI m_healthUI;
+	public ButtonUI m_ButtonUI;
+
+	public List<Vector2Int> MakeDangerList = new List<Vector2Int>();
+	public Dictionary<Vector2Int, BlockManager.BlockType> MakeGroundList = new Dictionary<Vector2Int, BlockManager.BlockType>();
 
 	private static GameManager _instance;
 	public static GameManager Instance
@@ -59,6 +66,9 @@ public class GameManager : MonoBehaviour
 		Health = data.health;
 		Danger = data.danger;
 		Change = data.change;
+		MakeDangerList.Clear();
+		MakeGroundList.Clear();
+		UpdateUI();
 	}
 
 	public void Success()
@@ -76,23 +86,29 @@ public class GameManager : MonoBehaviour
 		Health = data.health;
 		Danger = data.danger;
 		Change = data.change;
-		for (int i= 0; i < 6; i++)
+		MakeDangerList.Clear();
+		MakeGroundList.Clear();
+		for (int i= 0; i < 5; i++)
 		{
 			DangerList[i] = false;
 		}
+		UpdateUI();
 	}
 
 	public void ReloadScene()
 	{
 		Debug.Log("Next Helath");
 		var data = SceneData[CurLevel];
+		BlockManager.intMap = null; 
 		SceneManager.LoadScene(data.name);
+		UpdateUI();
 	}
 
 	public void Hurt(BlockManager.BlockType t)
 	{
-		DangerList[(int)t] = true;
+		DangerList[(int)t-1] = true;
 		Health--;
+		UpdateUI();
 		if (Health <= 0)
 		{
 			StartReload(0);
@@ -106,6 +122,17 @@ public class GameManager : MonoBehaviour
 	public void StartReload(int fun)
 	{
 		StartCoroutine(Reloading(fun));
+	}
+
+	public void UpdateUI()
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			m_iconPreference.changeIcon(i,DangerList[i]);
+		}
+		m_healthUI.blood(Health);
+		m_ButtonUI.setNumberDamage(Danger);
+		m_ButtonUI.setNumberGround(Change);
 	}
 
 	IEnumerator Reloading(int fun)
@@ -131,4 +158,18 @@ public class GameManager : MonoBehaviour
 		StopCoroutine(Reloading(fun));
 	}
 
+	public void StartPlayButton()
+	{
+		SelectObjManager.Instance.RunAI();
+	}
+
+	public void DamageSet()
+	{
+		SelectObjManager.Instance.StartMakeDanger();
+	}
+
+	public void GroundSet()
+	{
+		SelectObjManager.Instance.StartMakeGround();
+	}
 }

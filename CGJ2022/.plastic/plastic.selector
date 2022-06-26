@@ -1,0 +1,4 @@
+repository "CGJ2022@ssl://gamejam_2022_2580@sh02-plasticscm.unity.cn:8787"
+  path "/"
+    br "/main"
+    co "/main"

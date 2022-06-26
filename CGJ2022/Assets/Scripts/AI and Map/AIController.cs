@@ -41,7 +41,7 @@ public class AIController : MonoBehaviour
         {
             moveSpeed = 0.5f;
             //已经到了拐点,此处拐点应该多取0.5，具体以场景中坐标为准
-            if (Mathf.Abs(transform.position.x - targetPath[0]  ) <0.1f && Mathf.Abs(transform.position.z - targetPath[1]) < 0.1f && isChanging!=true)
+            if (Mathf.Abs(transform.position.x - targetPath[0]  ) <0.3f && Mathf.Abs(transform.position.z - targetPath[1]) < 0.3f && isChanging!=true)
             {
                 //固定一下位置
                 transform.position = new Vector3(targetPath[0] , transform.position.y, targetPath[1] );
@@ -76,7 +76,7 @@ public class AIController : MonoBehaviour
 
 
             //rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1])*moveSpeed*unit;
-            rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1]).normalized *moveSpeed*10;
+            rb.velocity = new Vector3(targetPath[0] - currentPath[0], 0, targetPath[1] - currentPath[1]).normalized *moveSpeed*20;
 
 
         }
@@ -96,16 +96,26 @@ public class AIController : MonoBehaviour
 
 	private void OnTriggerEnter(Collider other)
 	{
-        if (other.gameObject.CompareTag("Hurt"))
-        {
-            var t = other.GetComponent<BlockManager>().type;
+        var bm = other.GetComponent<BlockManager>();
+        if (!bm)
+		{
+            return;
+		}
+        var t = bm.type;
+        if (bm.isDanger)
+		{
             GameManager.Instance.Hurt(t);
+            bm.dangerUI.SetActive(false);
             FindObjectOfType<gameController>().hurtHelth();
+            AnimPlay.Instace.PlayAnim(other.gameObject);
+            AudioManager.Instace.PlayAudio((AudioManager.AudioName)t);
         }
-        if (other.gameObject.CompareTag("Win"))
-        {
-            GameManager.Instance.StartReload(1);
+        if (bm.isEnd)
+		{
             FindObjectOfType<gameController>().playerFail();
+            AnimPlay.Instace.PlayAnim(other.gameObject);
+            AudioManager.Instace.PlayAudio((AudioManager.AudioName)t);
+
         }
     }
 
@@ -140,7 +150,11 @@ public class AIController : MonoBehaviour
         originalPos = privatePath[0];
         if (path.Length <= 1)
         {
-            transform_ui.GetComponent<gameController>().playerFail();
+            Debug.Log("fail");
+            transform.position = BlockManager.GetWorldVec3(BlockManager.stPos);
+            FindObjectOfType<gameController>().playerFail();
+            canWalk = false;
+            return;
         }
         newPath[1] = BlockManager.GetWorldPos(privatePath[1]);
         targetPath[0] = newPath[1].x;
@@ -149,6 +163,7 @@ public class AIController : MonoBehaviour
         currentDirection = (targetPath[0] - currentPath[0]) == 0? (targetPath[1] - currentPath[1]) : (targetPath[0] - currentPath[0]);
         
         transform.position = new Vector3(currentPath[0], transform.position.y, currentPath[1]);
+		setMove();
     }
 
     public void setMove()

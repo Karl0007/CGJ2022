@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,22 +23,26 @@ public class BlockManager : MonoBehaviour
 	{
 		Wall = -1,
 		Null = 0,
-		Type2 = 1,
-		Type3 = 2,
-		Type4 = 3,
-		Type5 = 4,
-		Type6 = 5,
+		qiqiu = 1,
+		yongchi = 2,
+		feichuan = 3,
+		puke = 4,
+		fengshan = 5,
+		zhongdian = 6,
 	}
 
 	public GameObject safe;
 	public GameObject danger;
 	public GameObject cube;
+	public GameObject dangerUI;
 	public bool isEmpty;
 	public bool isDanger;
 	public bool isStart;
 	public bool isEnd;
 	public BlockType type;
+	public BlockType readyBuildType;
 	public Vector2Int pos;
+
 
 	public void DestroyChildren(GameObject obj)
 	{
@@ -49,6 +54,12 @@ public class BlockManager : MonoBehaviour
 
 	public void ChangeType(BlockType t)
 	{
+		Debug.Log(t);
+		if (t == BlockType.zhongdian)
+		{
+			Instantiate(safeBlocks[(int)t - 1], safe.transform);
+			return;
+		}
 		if (t == BlockType.Wall || type == BlockType.Wall)
 		{
 			Debug.Log("dont change wall");
@@ -59,30 +70,68 @@ public class BlockManager : MonoBehaviour
 		DestroyChildren(danger);
 		if (t != BlockType.Null)
 		{
-			//Instantiate(safeBlocks[(int)t - 1],safe.transform);
-			//Instantiate(dangerBlocks[(int)t - 1], danger.transform);
+			Instantiate(safeBlocks[(int)t - 1],safe.transform);
+			Instantiate(dangerBlocks[(int)t - 1], danger.transform);
 		}
+		danger.SetActive(isDanger);
+		safe.SetActive(!isDanger);
+		intMap[pos.x - LeftDown.x, pos.y - LeftDown.y] = (int)type;
 	}
 
 
 	public void SetDanger(bool d)
 	{
 		isDanger = d;
+		danger.SetActive(isDanger);
+		safe.SetActive(!isDanger);
 	}
 
 	public static Vector2 GetWorldPos(Vector2Int pos)
 	{
+		Debug.Log(pos +"--" + (pos + LeftDown + Vector2.one * 0.5f) * SumSize);
 		return ((pos + LeftDown + Vector2.one * 0.5f) * SumSize);
 	}
 
-	public static Vector3 GetWorldVec3(Vector2 pos)
+	public static Vector3 GetWorldVec3(Vector2Int pos)
 	{
-		return new Vector3(pos.x, posY, pos.y);
+		return new Vector3(GetWorldPos(pos).x, posY, GetWorldPos(pos).y);
+	}
+
+	static List<BlockManager> roundGround = new List<BlockManager>();
+	public List<BlockManager> GetRoundGround()
+	{
+		roundGround.Clear();
+		if (type == BlockType.Null || type == BlockType.Wall || isEnd || isStart)
+		{
+			return roundGround;
+		}
+		Vector2Int[] dir = new Vector2Int[] { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down };
+		foreach (var d in dir)
+		{
+			if (map.ContainsKey(d + pos))
+			{
+				var b = map[d + pos].GetComponent<BlockManager>();
+				if (b.type == BlockType.Null && !b.isEnd && !b.isStart)
+				{
+					roundGround.Add(b);
+				}
+			}
+		}
+		return roundGround;
+	}
+
+	public static void ClearRound()
+	{
+		foreach (var item in roundGround)
+		{
+			item.cube.SetActive(false);
+			item.readyBuildType = BlockType.Null;
+		}
+		roundGround.Clear();
 	}
 
 	public void Awake()
 	{
-		cube.SetActive(false);
 		pos = new Vector2Int(Mathf.RoundToInt((transform.position.x - SumSize / 2) / SumSize), Mathf.RoundToInt((transform.position.z - SumSize / 2) / SumSize));
 		map[pos] = gameObject;
 		LeftDown.x = Mathf.Min(pos.x, LeftDown.x);
@@ -94,14 +143,29 @@ public class BlockManager : MonoBehaviour
 
 	public void Start()
 	{
+		if (GameManager.Instance.MakeGroundList.ContainsKey(pos))
+		{
+			type = GameManager.Instance.MakeGroundList[pos];
+		}
+
+		if (GameManager.Instance.MakeDangerList.Contains(pos))
+		{
+			isDanger = true;
+		}
+
+		dangerUI.SetActive(isDanger);
+		cube.SetActive(false);
+		ChangeType(type);
 		if (intMap == null)
 		{
 			intMap = new int[RightUp.x - LeftDown.x + 1 , RightUp.y - LeftDown.y + 1];
 		}
 		if (isStart) stPos = pos - LeftDown;
 		if (isEnd) edPos = pos - LeftDown;
+		Debug.Log(pos - LeftDown);
 		intMap[pos.x - LeftDown.x, pos.y - LeftDown.y] = (int)type;
-		Debug.Log(edPos);
 		//ChangeType(BlockType.Type2);
 	}
+
+
 }

@@ -82,9 +82,9 @@ public class gameController : MonoBehaviour
 
     public void playerFail()
     {
-        Debug.Log("fail");
         var ai = FindObjectOfType<AIController>();
         ai.canWalk = false;
+        GameManager.Instance.StartReload(1);
     }
 
 
